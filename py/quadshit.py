@@ -95,7 +95,9 @@ class QuadShit(object):
         for i in range(Nb):
             for j in range(i,Nb):
                 # SD = 0.5 Tr(S, Cinv S, Cinv)
-                SD[i,j]=0.5*np.trace(np.dot(np.dot(Sp[i],CI),np.dot(Sp[j],CI)))
+                #SD[i,j]=0.5*np.trace(np.dot(CI,np.dot(Sp[i],np.dot(CI,Sp[j]))))
+                SD[i,j]=0.5*np.trace(np.dot(np.dot(CI,Sp[i]),np.dot(CI,Sp[j])))
+                #SD[i,j]=0.5*np.trace(np.dot(np.dot(CI,Sp[i]),np.dot(CI,Sp[j]).T))
                 SD[j,i]=SD[i,j]
         print SD[1,1]
         ## Ng is # of goes
