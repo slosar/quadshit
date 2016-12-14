@@ -46,12 +46,12 @@ class QuadShit(object):
             xip=irfft(ar)
             xil.append(xip)
             M=np.zeros((self.N,self.N))
-            for i in range(self.N):
-                if i<self.N-1:
-                    M[i,i:]=xip[:self.N-i]
-                    M[i,:i]=xip[i:0:-1]
+            for j in range(self.N):
+                if j<self.N-1:
+                    M[j,j:]=xip[:self.N-j]
+                    M[j,:j]=xip[j:0:-1]
                 else:
-                    M[i,:]=xip[::-1]
+                    M[j,:]=xip[::-1]
             Sp.append(M)
         return Sp, xil
 
@@ -89,7 +89,7 @@ class QuadShit(object):
         for i in range(Ng):
             cid=self.CI*self.genskew_masked()
             ## FD = 1/2 * (Cinv d)^T S, (Cinv d)
-            FD+=0.5*np.array([np.dot(np.dot(Sp[i],cid),cid) for i in range(Nb)])
+            FD+=0.5*np.array([np.dot(np.dot(Sp[j],cid),cid) for j in range(Nb)])
         print "Getting SD"
         SD=np.zeros((Nb,Nb))
         ## this is an idiotic way, since we know CI is diagonal, but let's keep it simple
