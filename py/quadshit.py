@@ -38,7 +38,10 @@ class QuadShit(object):
         xil=[]
         print "Creating Sp"
         for i in range(self.Nb):
+            # Andreu: I believe irfft expects as an input an array of N real numbers, not Nfft complex numbers
+            # Although the code doesn't complain, so probably you can also do this...
             ar=np.zeros(self.Nfft, np.complex)
+            # why are you doing this i+1? I guess it is related to how are you sorting the input array, I'm a bit lost.
             ar[i+1]=1.
             xip=irfft(ar)
             xil.append(xip)
