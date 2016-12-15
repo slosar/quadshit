@@ -37,22 +37,32 @@ class QuadShit(object):
         Sp=[]
         xil=[]
         print "Creating Sp"
+        N=self.N
+        St=np.zeros((N,N))
         for i in range(self.Nb):
             # Andreu: I believe irfft expects as an input an array of N real numbers, not Nfft complex numbers
             # Although the code doesn't complain, so probably you can also do this...
             ar=np.zeros(self.Nfft, np.complex)
-            # why are you doing this i+1? I guess it is related to how are you sorting the input array, I'm a bit lost.
-            ar[i+1]=1.
-            xip=irfft(ar)
+            if (i<self.Nb-1):
+                kup=(i+1)**2
+            else:
+                kup=self.N/2
+            kdown=i**2
+            xip=(np.sin(kup*2*np.pi*np.arange(N)/N)-np.sin(kdown*2*np.pi*np.arange(N)/N))/(2*np.pi*np.arange(N)/N)
+            xip[0]=(kup-kdown)
+            xip/=(N/2.)
             xil.append(xip)
-            M=np.zeros((self.N,self.N))
-            for j in range(self.N):
-                if j<self.N-1:
-                    M[j,j:]=xip[:self.N-j]
+            M=np.zeros((N,N))
+            for j in range(N):
+                if j<N-1:
+                    M[j,j:]=xip[:N-j]
                     M[j,:j]=xip[j:0:-1]
                 else:
                     M[j,:]=xip[::-1]
             Sp.append(M)
+            St+=M
+        #Sp.append(np.diag(np.ones(N))-St)
+        #xil.append(Sp[-1][0,:])
         return Sp, xil
 
     def getSp3(self):
