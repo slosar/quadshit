@@ -31,7 +31,6 @@ class QuadShit(object):
         ks=2*np.pi/1.0*np.arange(len(Pk))
         return ks,Pk,Pke
 
-
     def getSponez(self):
     ## return S prime, derivative in corr func for one redshift accross space
         Sp=[]
@@ -88,7 +87,24 @@ class QuadShit(object):
             for S in Sp1:
                 Sp3.append(W*S)
         return Sp3,xil
-    
+
+    def getSp3Alt(self):
+    ### return Sprime, 3 redshift bins, 
+        Sp1,xil=self.getSponez()
+        ## We demand that Spl, Spm and Sph add to Sp1
+        N=self.N
+        ## we make window at twice resolution
+        cosa=0.5*np.cos(np.pi*np.arange(N)/float(N))+0.5
+        wl=cosa
+        wh=1.-cosa
+        Xi=np.outer(np.ones(N,int),np.arange(N)).flatten()
+        Wl=wl[Xi].reshape((N,N))
+        Wh=wh[Xi].reshape((N,N))
+        Sp3=[]
+        for W1,W2,f in [(Wl,Wl,2.),(Wl,Wh,1.),(Wh,Wh,2.)]:
+            for S in Sp1:
+                Sp3.append(S*(W1*W2.T+W2*W1.T)/f)
+        return Sp3,xil,wl,wh
         
     
     def getOQE(self, Sp, Ng=10):
@@ -127,7 +143,35 @@ class QuadShit(object):
         print "chi2=",chi2, "chi2 diag=",chi2d
         return ks,Pk,err
                                    
+    def r2rfft(self,ar):
+        cc=rfft(ar)
+        N=len(ar)
+        toret=np.zeros(N)
+        toret[::2]=np.real(cc[:-1])
+        toret[1:-1:2]=np.imag(cc[1:-1])
+        toret[-1]=np.real(cc[-1])
+        toret[0]/=np.sqrt(2.)
+        toret[-1]/=np.sqrt(2.)
+        toret/=np.sqrt(self.N/2)
+        return toret
+            
+    def getLmatrix(self, Nsub):
+        Nd=self.N/Nsub
+        L=np.zeros((Nd,Nd))
+        for i in range(Nd):
+            x=np.zeros(Nd)
+            x[i]=1.0
+            L[:,i]=self.r2rfft(x)
+        if Nsub==1:
+            return L
+        L*=np.sqrt(Nsub)
+        toret=np.zeros((self.N,self.N))
+        for i in range(Nsub):
+            toret[Nd*i:Nd*(i+1),Nd*i:Nd*(i+1)]=L
+        return toret
+    
         
-        
+
+    
         
     
