@@ -88,6 +88,28 @@ class QuadShit(object):
                 Sp3.append(W*S)
         return Sp3,xil
 
+
+    def getSp2(self):
+    ### return Sprime, 3 redshift bins, 
+        Sp1,xil=self.getSponez()
+        ## We demand that Spl, Spm and Sph add to Sp1
+        N=self.N
+        ## we make window at twice resolution
+        wl=1.-np.arange(2*N)/(2.0*N)
+        wh=1.-wl
+        X=np.outer(np.ones(N,int),np.arange(N))+np.outer(np.arange(N),np.ones(N,int))
+        ## the hocus pocus below make Wl[i,j]=wl[i+j]
+        Xf=X.flatten()
+        Wl=wl[Xf].reshape((N,N))
+        Wh=wh[Xf].reshape((N,N))
+        Sp2=[]
+        for W in [Wl,Wh]:
+            for S in Sp1:
+                Sp2.append(W*S)
+        return Sp2,wl,wh
+
+
+
     def getSp3Alt(self):
     ### return Sprime, 3 redshift bins, 
         Sp1,xil=self.getSponez()
@@ -170,8 +192,59 @@ class QuadShit(object):
             toret[Nd*i:Nd*(i+1),Nd*i:Nd*(i+1)]=L
         return toret
     
-        
-
+    def getAndreuMats(self):
+        N=self.N
+        wl=1.0-np.arange(N)/(1.0*N)
+        wh=1.0-wl
+        FW=np.zeros((2*N,N))
+        RT=np.zeros((N,2*N))
+        for i in range(N):
+            x=np.zeros(N)
+            x[i]=1.0
+            f=self.r2rfft(x)
+            FW[i,:]=wl[i]*f
+            FW[N+i,:]=wh[i]*f
+            RT[:,i]=f
+            RT[:,N+i]=f
+        return FW,RT
     
-        
+    def getCutmatrices (self, Sp, kpad=0, koff=0, Nfft=2):
+        nS=[]
+        N=len(Sp[0])
+        N1=N/Nfft
+
+        for i,S in enumerate(Sp):
+            j=i%self.Nb
+            if (j<self.Nb-1):
+                kup=(j+1)**2
+                kup=2*kup+2
+            else:
+                kup=N1
+            kdown=j**2
+            kdown=2*kdown-1
+            kdown-=kpad
+            kup+=kpad
+            M=np.zeros((N,N))
+            for fi in range(Nfft):
+                ofsi=fi*N1
+                Noi=ofsi+N1-1
+                for fj in range(Nfft):
+                    ofsj=fj*N1
+                    Noj=ofsj+N1-1
+
+                    for a in range(N1):
+                        ao=a+ofsi
+                        for b in range(N1):
+                            if ((a<=kdown) or (a>=kup)) and ((b<=kdown) or (b>=kup)):
+                                continue
+                            bo=b+ofsj
+                            if (abs(a-b)<=koff):
+                                M[ao,bo]=S[ao,bo]
+                                M[ao,Noj-b]=S[ao,Noj-b]
+                                M[Noi-a,bo]=S[Noi-a,bo]
+                                M[Noj-a,Noj-b]=S[Noi-a,Noj-b]
+
+            nS.append(M)
+        return nS
+            
     
