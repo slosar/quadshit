@@ -11,7 +11,7 @@ class QuadShit(object):
         self.Nfft=self.N/2+1
         self.Nb=Nb   # number of lowk bins
         self.A2=A2  # amplitude at z=2
-        self.ramp=np.linspace(1.0,A2,self.N)
+        self.ramp=np.sqrt(np.linspace(1.0,A2,self.N))
         if mask is None:
             self.mask=np.ones(N)
         else:
@@ -71,9 +71,9 @@ class QuadShit(object):
         N=self.N
         ## we make window at twice resolution
         wl,wh=np.zeros(2*N),np.zeros(2*N)
-        cosa=0.5*np.cos(2*np.pi*np.arange(2*N)/float(2*N))+0.5
-        wl[:N]=cosa[:N]
-        wh[N:]=cosa[N:]
+        cosa=1.-np.arange(N)/(1.0*float(N))
+        wl[:N]=cosa
+        wh[N:]=1-cosa
         wm=(1-wl-wh)
         ## X below is the sum of indices, i.e. X[i,j]=i+j
         X=np.outer(np.ones(N,int),np.arange(N))+np.outer(np.arange(N),np.ones(N,int))
@@ -86,7 +86,7 @@ class QuadShit(object):
         for W in [Wl,Wm,Wh]:
             for S in Sp1:
                 Sp3.append(W*S)
-        return Sp3,xil
+        return Sp3,wl,wm,wh
 
 
     def getSp2(self):
